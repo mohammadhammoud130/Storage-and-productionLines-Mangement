@@ -17,6 +17,21 @@ public class Item {
         this.minThreshold = minThreshold;
     }
 
+    public boolean isUnderMinThreshold(){
+        return quantity > minThreshold;
+    }
+
+    public void updateStock(int value, boolean add) {
+        if (add) {
+            this.quantity += value;
+        } else {
+            if (this.quantity < value) {
+                throw new IllegalArgumentException("Not enough stock to reduce for item: " + name);
+            }
+            this.quantity -= value;
+        }
+    }
+
     public int getId() {
         return id;
     }

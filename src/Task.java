@@ -1,4 +1,6 @@
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Task {
     private static int id = 0;
@@ -10,6 +12,7 @@ public class Task {
     private String status;
     private double progress;
     private ProductLine assignedLine;
+
 
     public Task() {id = id++;}
 
@@ -23,6 +26,42 @@ public class Task {
         this.status = status;
         this.progress = progress;
         this.assignedLine = assignedLine;
+    }
+
+    public boolean checkMaterials() {
+        // to mak sure that there is  items in the inventory and its not empty before the check
+        if (Storage.getInventory() == null || Storage.getInventory().isEmpty()) {
+            throw new IllegalStateException("Inventory in Storage is empty! Cannot check materials.");
+        }
+
+        HashMap<Item, Integer> requiredItems = requiredProduct.getRequiredItems();
+
+        for (Map.Entry<Item, Integer> entry : requiredItems.entrySet()) {
+            Item item = entry.getKey();
+            int qtyPerUnit = entry.getValue();//كمية المطلوبة من مادة واحدة
+            int totalNeed = qtyPerUnit * requiredQuantity;
+
+            if (item.getQuantity() < totalNeed) {
+                System.out.println("Not enough quantity of the item: " + item.getName());
+                System.out.println("Required: " + totalNeed + " | Available: " + item.getQuantity());
+                return false;
+            }
+
+            if ((item.getQuantity() - totalNeed) < item.getMinThreshold()) {
+                System.out.println("Warning: Stock of " + item.getName() + " will drop below minimum threshold!");
+                return false;
+            }
+
+        }
+
+        for(Map.Entry<Item,Integer> entry : requiredItems.entrySet()){
+            int totalNeed = entry.getValue() * requiredQuantity ;
+         Storage.updateItemQTY(entry.getKey().getId() , totalNeed , false);
+        }
+
+        System.out.println("All materials are available for the task!");
+        return true;
+
     }
 
     public int getId() {
